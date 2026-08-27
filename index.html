@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NO3S1S — Sovereign AI SuperNode</title>
+<style>
+  :root{
+    --bg:#0b0c0f; --bg2:#101218; --ink:#f4efe6; --dim:#9a938a; --copper:#cf8346;
+    --copper2:#e8a05c; --line:rgba(244,239,230,.12); --card:#14161c; --cream:#efe9dc;
+    --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"SF Pro Display",Inter,"Segoe UI",Helvetica,Arial,sans-serif;
+    --assets:https://raw.githubusercontent.com/49mpv8wgfm-coder/no3s1s/main/assets;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  ::selection{background:var(--copper);color:#000}
+  img{max-width:100%}
+
+  /* ---------- reading levels: Billboard / Story / Blueprint ---------- */
+  .z2,.z3{transition:opacity .7s ease,max-height .7s ease;overflow:hidden}
+  .z2{max-height:2400px}.z3{max-height:2400px}
+  body[data-zoom="1"] .z2,body[data-zoom="1"] .z3,
+  body[data-zoom="2"] .z3{opacity:0;max-height:0!important;pointer-events:none}
+  .roll{opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease;transition-delay:calc(var(--i,0)*90ms)}
+  body[data-zoom="2"] .z2 .roll,body[data-zoom="3"] .roll{opacity:1;transform:none}
+
+  #zoomctl{position:fixed;right:16px;bottom:16px;z-index:99;display:flex;gap:4px;align-items:center;
+    background:rgba(14,15,20,.82);border:1px solid var(--line);border-radius:999px;padding:6px;backdrop-filter:blur(14px)}
+  #zoomctl button{background:none;border:1px solid transparent;color:var(--dim);border-radius:999px;
+    padding:9px 16px;cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;transition:.25s}
+  #zoomctl button.on{background:var(--copper);color:#000;font-weight:700}
+  #zoomctl button:not(.on):hover{color:var(--ink);border-color:var(--line)}
+  @media(max-width:560px){#zoomctl{right:50%;transform:translateX(50%)}}
+
+  section{padding:16vh 6vw;position:relative;border-bottom:1px solid var(--line)}
+  .label{font-family:var(--mono);font-size:11px;letter-spacing:.35em;color:var(--copper);text-transform:uppercase;margin-bottom:28px}
+  .fine{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.05em;line-height:1.8}
+  .reveal{opacity:0;transform:translateY(24px);transition:opacity .9s ease,transform .9s ease}
+  .reveal.in{opacity:1;transform:none}
+
+  /* ---------- hero ---------- */
+  #hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;border-bottom:none}
+  #hero .node{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:.5;pointer-events:none;
+    background:radial-gradient(ellipse at 50% 55%,#1b1410 0%,transparent 70%)}
+  #hero .node img{width:min(88vw,1100px);filter:saturate(1.05);animation:float 9s ease-in-out infinite}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+  #hero .veil{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 60%,transparent 0%,var(--bg) 78%)}
+  #hero .stack{position:relative;z-index:2}
+  h1.brand{font-size:clamp(64px,14vw,220px);font-weight:800;letter-spacing:-.03em;line-height:.92;
+    background:linear-gradient(180deg,#fff 20%,var(--copper2) 90%);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{font-size:clamp(16px,2.6vw,34px);font-weight:300;letter-spacing:.42em;text-transform:uppercase;margin-top:18px}
+  .tagline{margin-top:34px;font-family:var(--mono);font-size:13px;letter-spacing:.3em;color:var(--copper)}
+  .amdline{margin-top:56px;display:flex;align-items:center;gap:12px;justify-content:center;font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.15em}
+  .amdmark{font-weight:800;color:var(--ink);border:1.5px solid var(--ink);padding:2px 8px;letter-spacing:.05em;font-size:13px}
+
+  /* ---------- manifesto ---------- */
+  #manifesto{text-align:center}
+  .mantra{font-size:clamp(30px,5.2vw,72px);font-weight:700;letter-spacing:-.02em;line-height:1.25;padding:.35em 0}
+  .mantra.dim{color:var(--dim);font-weight:300}
+  .mantra .cu{color:var(--copper2)}
+
+  /* ---------- three words ---------- */
+  .tri{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
+  .tri>div{background:var(--bg);padding:56px 40px}
+  .tri h3{font-size:clamp(26px,3vw,40px);font-weight:700;letter-spacing:-.01em;margin-bottom:14px}
+  .tri p{color:var(--dim);font-size:16px;line-height:1.65;font-weight:300}
+
+  /* ---------- product ---------- */
+  #product{background:var(--cream);color:#141414}
+  #product .label{color:#a05a1e}
+  #product .wrap{display:grid;grid-template-columns:1.2fr 1fr;gap:6vw;align-items:center}
+  @media(max-width:900px){#product .wrap{grid-template-columns:1fr}}
+  #product img{width:100%;border-radius:18px;box-shadow:0 40px 90px rgba(20,20,20,.18)}
+  .ph{background:linear-gradient(135deg,#ddd5c4,#c9bfa8);border-radius:18px;min-height:280px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;color:#6b655a;letter-spacing:.2em}
+  .sku{font-family:var(--mono);font-size:12px;letter-spacing:.3em;color:#a05a1e;margin-bottom:16px}
+  .pname{font-size:clamp(44px,7vw,110px);font-weight:800;letter-spacing:-.03em;line-height:1}
+  .pmean{font-size:clamp(16px,1.6vw,21px);color:#3d3a34;margin-top:22px;line-height:1.6;max-width:46ch}
+  .price{margin-top:36px;font-size:clamp(34px,4vw,56px);font-weight:800;letter-spacing:-.02em}
+  .price small{font-family:var(--mono);font-size:12px;font-weight:400;letter-spacing:.2em;color:#6b655a;display:block;margin-top:8px}
+
+  /* ---------- specs ---------- */
+  .specgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
+  .spec{background:var(--card);padding:40px 34px}
+  .spec .k{font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--copper);text-transform:uppercase}
+  .spec .v{font-size:clamp(20px,2vw,27px);font-weight:700;margin-top:12px;line-height:1.3}
+  .spec .d{color:var(--dim);font-size:14px;margin-top:8px;line-height:1.6;font-weight:300}
+  .specimg{background:var(--cream);display:flex;align-items:center;justify-content:center;padding:34px}
+  .specimg img{width:100%;max-width:420px;border-radius:12px}
+
+  /* ---------- max band ---------- */
+  #max{background:linear-gradient(180deg,var(--bg2),var(--bg));text-align:center}
+  .bignum{font-size:clamp(56px,10vw,150px);font-weight:800;letter-spacing:-.03em;line-height:1;
+    background:linear-gradient(180deg,var(--copper2),var(--copper));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .bigrow{display:flex;flex-wrap:wrap;justify-content:center;gap:6vw;margin:8vh 0}
+  .bigrow>div{min-width:200px}
+  .bigcap{font-family:var(--mono);font-size:12px;letter-spacing:.3em;color:var(--dim);text-transform:uppercase;margin-top:14px}
+  .volt{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:14px 30px;font-family:var(--mono);font-size:13px;letter-spacing:.1em;margin:6px}
+
+  /* ---------- frontier models ---------- */
+  .models{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
+  .model{background:var(--card);padding:48px 34px;text-align:center}
+  .mlogo{width:64px;height:64px;margin:0 auto 22px;border-radius:16px;background:var(--bg2);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;color:var(--copper2);position:relative;overflow:hidden}
+  .mlogo img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:10px}
+  .model .mn{font-size:clamp(22px,2.4vw,30px);font-weight:800;letter-spacing:-.01em}
+  .model .mp{font-family:var(--mono);font-size:12px;color:var(--copper);letter-spacing:.2em;margin-top:8px}
+  .model .md{color:var(--dim);font-size:14px;margin-top:12px;font-weight:300}
+
+  /* ---------- flow ---------- */
+  .flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
+  .step{background:var(--card);padding:44px 32px}
+  .step .n{font-family:var(--mono);font-size:12px;color:var(--copper);letter-spacing:.25em}
+  .step .amt{font-size:clamp(30px,3.4vw,46px);font-weight:800;margin-top:14px;letter-spacing:-.02em}
+  .step .w{color:var(--dim);font-size:14px;margin-top:10px;line-height:1.6;font-weight:300}
+  .step .sum{margin-top:18px;font-family:var(--mono);font-size:12px;color:var(--copper2);letter-spacing:.08em}
+
+  /* ---------- math ---------- */
+  #math{text-align:center}
+  .equation{font-size:clamp(25px,4.6vw,64px);font-weight:700;letter-spacing:-.02em;line-height:1.4}
+  .equation .cu{color:var(--copper2)}
+  .eqsub{font-family:var(--mono);font-size:13px;color:var(--dim);letter-spacing:.15em;margin-top:26px;line-height:2}
+
+  footer{padding:14vh 6vw;text-align:center}
+  footer .close{font-size:clamp(30px,4.5vw,58px);font-weight:800;letter-spacing:-.02em}
+  footer .close span{color:var(--copper2)}
+  footer .fine{margin-top:34px;max-width:70ch;margin-left:auto;margin-right:auto}
+  .cta{display:inline-block;margin-top:40px;background:var(--copper);color:#000;font-weight:700;font-size:15px;
+    padding:18px 46px;border-radius:999px;text-decoration:none;letter-spacing:.04em;transition:.25s}
+  .cta:hover{background:var(--copper2);transform:translateY(-2px)}
+</style>
+</head>
+<body data-zoom="2">
+
+<div id="zoomctl">
+  <button data-z="1">Billboard</button>
+  <button data-z="2" class="on">Story</button>
+  <button data-z="3">Blueprint</button>
+</div>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="node"><img src="https://raw.githubusercontent.com/49mpv8wgfm-coder/no3s1s/main/assets/node-dark.jpg" alt="NO3S1S PR0T0-N node" onerror="this.remove()"></div>
+  <div class="veil"></div>
+  <div class="stack">
+    <h1 class="brand">NO3S1S</h1>
+    <div class="sub">Sovereign AI SuperNode</div>
+    <div class="tagline">THE NUMBER OF EXPERTS SYSTEM</div>
+    <div class="amdline"><span class="amdmark">AMD</span> BUILT ON AMD INSTINCT&trade; MI350P</div>
+  </div>
+</section>
+
+<!-- MANIFESTO -->
+<section id="manifesto">
+  <div class="mantra dim reveal">No cloud.</div>
+  <div class="mantra dim reveal">No subscription.</div>
+  <div class="mantra dim reveal">No kill switch.</div>
+  <div class="mantra reveal">Your experts <span class="cu">never leave the building.</span></div>
+  <div class="z3 fine" style="margin-top:5vh"><span class="roll">NO3S1S runs entirely on your premises — air-gap capable, firewall-optional, phone-home-free.</span><br><span class="roll" style="--i:1">The capability is yours the way any capital equipment is yours.</span></div>
+</section>
+
+<!-- WHY -->
+<section id="why">
+  <div class="label reveal">Why it exists</div>
+  <div class="tri">
+    <div class="reveal"><h3>Sovereign.</h3><p>The model sits behind your firewall — or behind no network at all. Every session, every token, every file stays inside your walls.</p></div>
+    <div class="reveal"><h3>Capital.</h3><p>Cloud AI is a meter that runs faster the more you succeed. This is a machine you buy once — an asset on your books, not a bill that never ends.</p></div>
+    <div class="reveal"><h3>Close.</h3><p>Intelligence next to the data, the systems, and the people. Responses at the speed of the local network — not the speed of someone else's queue.</p></div>
+  </div>
+  <div class="z3 fine" style="margin-top:28px"><span class="roll">The 19-inch rack is a 1920s telephone-relay standard. AI inherited it by default, not by design.</span><br><span class="roll" style="--i:1">PR0T0-N is purpose-built for where work actually happens — office-powerable, air-cooled, quiet by engineering rather than by adjective.</span></div>
+</section>
+
+<!-- PRODUCT -->
+<section id="product">
+  <div class="label reveal">The First Machine</div>
+  <div class="wrap">
+    <div>
+      <div class="sku">SKU — PR0T0-N</div>
+      <div class="pname">PR0T0&#8202;-&#8202;N</div>
+      <p class="pmean"><b>Prototype Node.</b> Named for the proton — the elementary particle of the AI nucleus.<br>
+      One node for a single mind. A supernode for a whole team. Upgradeable. Configurable. Numbered.</p>
+      <div class="price">$128,000<small>ESTIMATED MSRP &nbsp;·&nbsp; FIRST RUN OF 128 &nbsp;·&nbsp; 2&#8319;</small></div>
+    </div>
+    <div class="ph"><img src="https://raw.githubusercontent.com/49mpv8wgfm-coder/no3s1s/main/assets/node-white.jpg" alt="PR0T0-N sovereign AI node" onerror="this.remove()"></div>
+  </div>
+</section>
+
+<!-- SPECS -->
+<section id="specs">
+  <div class="label reveal">PR0T0-N &nbsp;·&nbsp; As it ships</div>
+  <div class="specgrid">
+    <div class="specimg ph"><img src="https://raw.githubusercontent.com/49mpv8wgfm-coder/no3s1s/main/assets/mi350p.jpg" alt="AMD Instinct MI350P" onerror="this.remove()"></div>
+    <div class="spec"><div class="k">Compute</div><div class="v">3&times; AMD Instinct&trade; MI350P</div><div class="d">144GB HBM3E each — 432GB of high-bandwidth memory at ~12 TB/s aggregate, on a custom PCIe 5.0 switch plane.</div></div>
+    <div class="specimg ph"><img src="https://raw.githubusercontent.com/49mpv8wgfm-coder/no3s1s/main/assets/cxl-board.jpg" alt="CXL KV cache accelerator" onerror="this.remove()"></div>
+    <div class="spec"><div class="k">Long Memory</div><div class="v">2&times; CXL KV Accelerators</div><div class="d">1TB of CXL-attached ECC memory dedicated to KV cache. Million-token context, resident — not swapped.</div></div>
+    <div class="spec"><div class="k">Platform</div><div class="v">64-Core Threadripper&trade; PRO</div><div class="d">8-channel ECC, 256GB DDR5 system memory. Seven PCIe 5.0 slots of motherboard-plane headroom.</div></div>
+    <div class="spec"><div class="k">Storage</div><div class="v">8TB Gen5 + 16TB RAID&#8202;0</div><div class="d">Gen5 NVMe for OS and data. 16TB Gen4 RAID-0 model store with a GPUDirect path — models load in seconds, not minutes.</div></div>
+    <div class="spec"><div class="k">Power</div><div class="v">2&times; 2200W, You Choose the Voltage</div><div class="d">120V runs up to 4 GPUs. 240V unlocks all 8. Dual 80+ Platinum supplies, user-selectable for scale.</div></div>
+    <div class="spec"><div class="k">Thermal</div><div class="v">Custom Air. No Water.</div><div class="d">Per-GPU shrouds and bracket-heatsinks engineered to minimize throttling. No facility water, no liquid loops, no drama.</div></div>
+    <div class="spec"><div class="k">Software</div><div class="v">Linux + Open AI Stack</div><div class="d">Total software licensing cost on the BOM: $0.03. The rest is open source — and yours.</div></div>
+  </div>
+</section>
+
+<!-- MAX -->
+<section id="max">
+  <div class="label reveal">Headroom, printed on the box</div>
+  <div class="bigrow">
+    <div class="reveal"><div class="bignum">8</div><div class="bigcap">GPUs Max</div></div>
+    <div class="reveal"><div class="bignum">2<span style="font-size:.45em">TB</span></div><div class="bigcap">KV Cache Max</div></div>
+    <div class="reveal"><div class="bignum">32<span style="font-size:.45em">TB</span></div><div class="bigcap">Model Storage Max</div></div>
+  </div>
+  <div class="volt">120V &nbsp;·&nbsp; 4 GPUs</div><div class="volt">240V &nbsp;·&nbsp; 8 GPUs</div>
+  <div class="z3 fine" style="margin-top:5vh"><span class="roll">Six accelerators ride the custom switch plane; two more live on the motherboard plane.</span><br><span class="roll" style="--i:1">Buy three today. Hire the rest when you're ready.</span></div>
+</section>
+
+<!-- FRONTIER MODELS -->
+<section id="models">
+  <div class="label reveal">Frontier Class Models — resident, not rented</div>
+  <div class="models">
+    <div class="model reveal">
+      <div class="mlogo">K<img src="https://www.google.com/s2/favicons?domain=kimi.com&sz=128" alt="" onerror="this.remove()"></div>
+      <div class="mn">Kimi K3</div><div class="mp">2.8T PARAMETERS</div>
+      <div class="md">The long-context frontier.</div>
+    </div>
+    <div class="model reveal">
+      <div class="mlogo">DS<img src="https://www.google.com/s2/favicons?domain=deepseek.com&sz=128" alt="" onerror="this.remove()"></div>
+      <div class="mn">DeepSeek V4</div><div class="mp">1.6T PARAMETERS</div>
+      <div class="md">The open heavyweight.</div>
+    </div>
+    <div class="model reveal">
+      <div class="mlogo">GLM<img src="https://www.google.com/s2/favicons?domain=z.ai&sz=128" alt="" onerror="this.remove()"></div>
+      <div class="mn">GLM 5.2</div><div class="mp">740B PARAMETERS</div>
+      <div class="md">The multilingual mind.</div>
+    </div>
+  </div>
+  <div class="z2 fine" style="margin-top:28px"><span class="roll">Frontier-class. Resident on your node. No queue, no meter, no egress.</span></div>
+  <div class="z3 fine" style="margin-top:14px"><span class="roll">This is what the KV accelerators are for: trillion-parameter models with million-token context, loaded once and kept warm.</span><br><span class="roll" style="--i:1">Measured throughput per model publishes with the validation set. Counted, not claimed.</span></div>
+</section>
+
+<!-- BUILD -->
+<section id="build">
+  <div class="label reveal">How it's built</div>
+  <div class="tri">
+    <div class="reveal"><h3>Two stages.</h3><p>The base system first — chassis, boards, power, cooling. Then final assembly: your accelerators and memory, purchased only after your payment is secured.</p></div>
+    <div class="reveal"><h3>Tranches of 32. Batches of 8.</h3><p>A numbered First Run of 128, built in four production tranches and shipped in batches of eight. Nothing is built unsold.</p></div>
+    <div class="reveal"><h3>Proven, then shipped.</h3><p>Component-level validation. A 48-hour burn-in. And every unit leaves with its own measured validation report — its serial number's actual data.</p></div>
+  </div>
+</section>
+
+<!-- FLOW -->
+<section id="flow">
+  <div class="label reveal">How it's financed — the preorder flow</div>
+  <div class="flow">
+    <div class="step reveal"><div class="n">01 · RESERVE</div><div class="amt">$500</div><div class="w">Per reservation. 100 reservations, screened — no competitors, no brand liabilities.</div><div class="sum">= $50K</div></div>
+    <div class="step reveal"><div class="n">02 · PRODUCTION BEGINS</div><div class="amt">+$1,000</div><div class="w">Billed to every reservation the moment the run starts.</div><div class="sum">= $100K &nbsp;→&nbsp; $150K in hand</div></div>
+    <div class="step reveal"><div class="n">03 · BUILT IN 8s</div><div class="amt">+$1,500</div><div class="w">Per unit, when your system reaches final assembly.</div><div class="sum">+$12K per batch</div></div>
+    <div class="step reveal"><div class="n">04 · COMPLETE</div><div class="amt">$125K</div><div class="w">Balance on validation. Only then are the GPUs and memory purchased — just-in-time.</div><div class="sum">+$444K net per batch</div></div>
+  </div>
+  <div class="z2 fine" style="margin-top:28px"><span class="roll">No buyer ever has more than $3,000 — 2.3% of the price — committed before their machine exists, is burned in, and is validated.</span><br><span class="roll" style="--i:1">You never fund our inventory. Your payment funds your machine.</span></div>
+  <div class="z3 fine" style="margin-top:14px"><span class="roll">Stages are non-refundable — but if a buyer exits and their completed system resells, they're made whole.</span><br><span class="roll" style="--i:1">Terms in plain language, reviewed by counsel. Finals by wire or ACH.</span></div>
+</section>
+
+<!-- MATH -->
+<section id="math">
+  <div class="label reveal">The entrepreneurial math</div>
+  <div class="equation reveal">$128,000 &nbsp;−&nbsp; $96,000 &nbsp;=&nbsp; <span class="cu">$32,000</span> per node</div>
+  <div class="equation reveal" style="margin-top:4vh">&times; 128 nodes &nbsp;=&nbsp; <span class="cu">$16.4M</span> revenue &nbsp;·&nbsp; <span class="cu">~$4.1M</span> profit</div>
+  <div class="eqsub reveal">STARTED BY $150K OF CUSTOMER PREORDERS. NO OUTSIDE CAPITAL REQUIRED.<br>BOOTSTRAPPED.</div>
+  <div class="z3 fine" style="margin-top:4vh"><span class="roll">Costs modeled at the retail + tariff ceiling; volume pricing (~$6K/unit) is pure upside — a path to ~30% margin.</span><br><span class="roll" style="--i:1">The run self-funds from the first batch of eight. The customers finance the production line.</span></div>
+</section>
+
+<!-- CLOSE -->
+<footer>
+  <div class="close reveal">Counted, <span>not claimed.</span></div>
+  <div class="fine reveal">NO3S1S · PR0T0-N · A DesLabs Machine &nbsp;—&nbsp; All figures are estimates at retail-ceiling component pricing and estimated MSRP. Final pricing locks at your production slot.</div>
+  <a class="cta reveal" href="#">Reserve PR0T0-N — deslabs.ai</a>
+</footer>
+
+<script>
+  const ctl=[...document.querySelectorAll('#zoomctl button')];
+  const setZ=z=>{document.body.dataset.zoom=z;ctl.forEach(x=>x.classList.toggle('on',x.dataset.z===z))};
+  ctl.forEach(b=>b.addEventListener('click',()=>setZ(b.dataset.z)));
+  addEventListener('keydown',e=>{if(['1','2','3'].includes(e.key))setZ(e.key)});
+  const io=new IntersectionObserver(es=>es.forEach(e=>e.isIntersecting&&e.target.classList.add('in')),{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>
